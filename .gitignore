@@ -2,3 +2,9 @@
 __pycache__/*
 *.ipynb_checkpoints
 *.txt
+
+# Config
+config/*
+
+# Data
+data/*
