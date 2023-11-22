@@ -8,3 +8,6 @@ config/*
 
 # Data
 data/*
+
+# Virtual Environments
+neo4j/*
