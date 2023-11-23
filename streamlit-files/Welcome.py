@@ -1,40 +1,12 @@
-#
-# Client-side python app for Final Project, this time working with
-# web service, which in turn uses AWS S3 ato implement
-# a simple ML Model for rental price prediction and apartment description generation.
-#
-# Final Project for CS 310
-#
-# Authors:
-#   YOUR NAME
-#   Sharika Mahadevan, Hye Won Hwang, Alejandra Lelo de Larrea Ibarra
-#   Northwestern University
-#   CS 310
-#
-
-###################################################################
-#
+#########################################################################
 # Importing packages
-#
-
-import os
-import pathlib
-import logging
-import sys
-import base64
-from configparser import ConfigParser
-
-import requests  # calling web service
-# import json  # relational-object mapping
-
-# import matplotlib.pyplot as plt
-# import matplotlib.image as img
-
+#########################################################################
 import streamlit as st
+import sys
 
 #########################################################################
 # main
-#
+#########################################################################
 st.title('** Welcome to SocialPulse Insights **')
 st.header('Who are we?')
 st.write('Unlock the Power of Social Influence with SocialPulse Insights, the Premier Social Network Analytics Solution!')
@@ -46,17 +18,3 @@ print()
 
 # eliminate traceback so we just get error message:
 sys.tracebacklimit = 0
-
-#
-# what config file should we use for this session?
-#
-config_file = 'config/config.ini'
-
-#
-# setup base URL to web service:
-#
-configur = ConfigParser()
-configur.read(config_file)
-baseurl = configur.get('client', 'webservice')
-
-
