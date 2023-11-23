@@ -11,4 +11,5 @@ data/*
 
 # Virtual Environments
 neo4j/*
+client_app/*
 
