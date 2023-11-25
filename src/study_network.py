@@ -7,6 +7,7 @@ from pathlib import Path
 from typing import List, Dict
 import json
 import openai
+import neo4j
 from configparser import ConfigParser
 from langchain.chat_models import ChatOpenAI
 from langchain.chains import GraphCypherQAChain
