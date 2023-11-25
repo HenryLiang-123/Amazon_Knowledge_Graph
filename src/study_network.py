@@ -16,7 +16,7 @@ import getpass
 ################################################################################
 # Execute Graph Operations
 ################################################################################
-def execute_graph_operations(config_path: str, user_query: str) -> str:
+def execute_graph_operations(config_path: str, user_query: str, network_choice: str) -> Dict:
     """
     Summary: This function connects to the Neo4j DB, creates Cypher
     Queries using LangChain and executes it on Neo4j DB
@@ -31,20 +31,32 @@ def execute_graph_operations(config_path: str, user_query: str) -> str:
     configur.read(config_path)
 
     try:
-        # Getting neo4j credentials
-        uri = configur.get('neo4j-graph', 'uri')
-        username = configur.get('neo4j-graph', 'username')
-        password = configur.get('neo4j-graph', 'password')
+        uri = None
+        username = None
+        password = None
+        if network_choice == "EU Communication Network":
+            # Get neo4j credentials
+            uri = configur.get('eu-neo4j-graph', 'uri')
+            username = configur.get('eu-neo4j-graph', 'username')
+            password = configur.get('eu-neo4j-graph', 'password')
+    except Exception as err:
+        print("Error in getting Graph DB credentials")
+        return {'statusCode': 400,
+                'body': json.dumps(err)}
 
-        # Make Graph Connection
-        graph = Neo4jGraph(url=uri, username=username, password=password)
-        print("You have successfully connected to Graph DB")
+    # Connecting to Graph DB
+    try:
+        graph = Neo4jGraph(
+                url=uri,
+                username=username,
+                password=password
+            )
     except Exception as err:
         print("Error in connecting to Graph DB")
         return {'statusCode': 400,
                 'body': json.dumps(err)}
 
-    # Set Up OpenAI API
+    # Set Up OpenAI API and get response
     try:
         api_key = configur.get('openai-api', 'api-key')
         name = 'OPENAI_API_KEY'

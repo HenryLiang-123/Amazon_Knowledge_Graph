@@ -4,7 +4,7 @@
 from neo4j import GraphDatabase
 import sys
 from pathlib import Path
-from typing import List, Dict
+from typing import List, Dict, Union
 import json
 
 ################################################################################
@@ -49,7 +49,7 @@ def add_nodes_edges(tx, from_node_id: int, to_node_id: int) -> None:
 # Create graph
 ################################################################################
 def create_graph(uri: str, username: str, password: str, data: List[List[int]]) \
-                                                    -> Dict[str]:
+                                                    -> Dict:
     """
     Summary: This function creates the graph network in specified database
     ----------------------------------------------------------------------
