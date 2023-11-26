@@ -22,6 +22,12 @@ from src.study_network import execute_graph_operations
 # main
 ########################################
 
+st.set_page_config(
+    page_title="Go To Network Analytics",
+    page_icon="👍",
+)
+st.sidebar.success("Let's understand the Social Network.")
+
 # Setting config file 
 config_file = None
 try:

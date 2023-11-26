@@ -20,6 +20,12 @@ from src.create_database import get_data, add_nodes_edges, create_graph
 # main
 ########################################
 
+st.set_page_config(
+    page_title="Go To Get Data",
+    page_icon=":bar_chart:",
+)
+st.sidebar.success("Database Set-Up and Creation.")
+
 # Setting config file 
 try:
     config_file = 'config/config.ini'

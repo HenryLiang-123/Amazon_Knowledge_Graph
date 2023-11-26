@@ -11,7 +11,7 @@ import neo4j
 from configparser import ConfigParser
 from langchain.chat_models import ChatOpenAI
 from langchain.chains import GraphCypherQAChain
-from langchain.graphs import Neo4jGraph
+from langchain.graphs.neo4j_graph import Neo4jGraph
 import getpass
 
 ################################################################################
@@ -42,8 +42,13 @@ def execute_graph_operations(config_path: str, user_query: str, network_choice: 
             password = configur.get('eu-neo4j-graph', 'password')
     except Exception as err:
         print("Error in getting Graph DB credentials")
+        print(err)
         return {'statusCode': 400,
                 'body': json.dumps(err)}
+    
+    print(uri)
+    print(username)
+    print(password)
 
     # Connecting to Graph DB
     try:
@@ -54,6 +59,7 @@ def execute_graph_operations(config_path: str, user_query: str, network_choice: 
             )
     except Exception as err:
         print("Error in connecting to Graph DB")
+        print(err)
         return {'statusCode': 400,
                 'body': json.dumps(err)}
 
