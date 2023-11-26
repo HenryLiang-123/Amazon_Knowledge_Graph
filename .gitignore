@@ -8,6 +8,7 @@ config/*
 
 # Data
 notebooks/data/*
+data/*
 
 # Virtual Environments
 neo4j/*
