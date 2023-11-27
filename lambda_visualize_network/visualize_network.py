@@ -3,7 +3,6 @@
 ################################################################################
 import sys
 from pathlib import Path
-from typing import Dict
 import json
 from configparser import ConfigParser
 import matplotlib.pyplot as plt
@@ -13,8 +12,7 @@ from py2neo import Graph
 ################################################################################
 # Visualize graph
 ################################################################################
-def visualize_graph(config_path: str, network_choice: str, num_records: int, \
-    output_path: Path) -> Dict[str, object]:
+def lambda_handler(event, context):
     """
     Summary: This function collects the data from Neo4j DB and returns the visualization
     ----------------------------------------------------------------------
@@ -24,8 +22,19 @@ def visualize_graph(config_path: str, network_choice: str, num_records: int, \
     output_path: Path to save visualization
     ----------------------------------------------------------------------
     """
+    #Collect the body of the request
+    try:
+        network_choice = event["network_choice"]
+        num_records = event["num_records"]
+    except Exception as err:
+        print("You have encountered an error in extracting the body of the request.")
+        return {'statusCode': 400,
+                'body': str(err)}
+    
+    output_path = "tmp/"
 
     # Get configuration
+    config_path = "config/config.ini"
     configur = ConfigParser()
     configur.read(config_path)
 
@@ -61,12 +70,18 @@ def visualize_graph(config_path: str, network_choice: str, num_records: int, \
         return {"statusCode": 400,
                 "body": str(err)}
     
-    # Define
-    cypher_query = f"""
-    MATCH (n)-[r]->(m)
-    RETURN n, r, m 
-    LIMIT {num_records};
-    """
+    # Define cypher query
+    cypher_query = None
+    if isinstance(num_records, (int)):
+        cypher_query = f"""
+        MATCH (n)-[r]->(m)
+        RETURN n, r, m 
+        LIMIT {num_records};
+        """
+    else:
+        print("Invalid input. Ensure to pass only integer input for num_records.")
+        return {"statusCode": 400,
+                "body": "Invalid input. Ensure to pass only integer input for num_records."}
 
     # Get data from Neo4j
     try:
@@ -99,11 +114,21 @@ def visualize_graph(config_path: str, network_choice: str, num_records: int, \
         plt.figure(figsize=(20, 20))
         nx.draw(G, pos, with_labels=True, node_size=900, node_color="skyblue", font_size=11, width=0.8, edge_color="gray")
         plt.title("Graph Visualization from Neo4j")
-        plt.savefig(output_path / f"neo4j_graph_{network_choice}.png")
+        plt.savefig(output_path + f"neo4j_graph_{network_choice}.png")
         plt.close()
-        return {"statusCode": 200,
-                "body": "You have successfully uploaded the image to local repository."}
+
+        print("You have successfully visualized the network.")
     except Exception as err:
         print("You have encountered an error while creating the graph visualization.")
+        return {"statusCode": 400,
+                "body": str(err)}
+    
+    # Read image file
+    try:
+        with open(output_path + f"neo4j_graph_{network_choice}.png", 'rb') as file_handle:
+            return {"statusCode": 200,
+                "body": file_handle.read()}
+    except Exception as err:
+        print("You have encountered an error while returning the graph visualization.")
         return {"statusCode": 400,
                 "body": str(err)}

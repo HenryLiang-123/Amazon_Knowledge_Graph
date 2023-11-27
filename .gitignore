@@ -9,6 +9,9 @@
 # Data
 **/data/*
 
+#Plots
+**/plots/*
+
 # Virtual Environments
 neo4j/*
 client_app/*
