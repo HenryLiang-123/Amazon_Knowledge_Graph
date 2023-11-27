@@ -14,8 +14,6 @@ import streamlit as st
 # adding src to the system path
 sys.path.insert(0, os.getcwd())
 
-from src.study_network import execute_graph_operations
-
 ########################################
 # main
 ########################################
@@ -52,13 +50,15 @@ try:
                 "network_choice": network_choice}
 
         # Get url
-        baseurl = configur.get('client', 'webservice')
-        api = '/make_description'
+        baseurl = configur.get('client', 'web-server')
+        api = '/study_network'
         url = baseurl + api
 
         res = requests.post(url, json=data)
 
         response = res.json()
+        print(res)
+        print(response)
 
         if response['statusCode'] == 200:
             st.write(response["body"])

@@ -4,7 +4,6 @@
 import sys
 import os
 from pathlib import Path
-from typing import List, Dict
 import json
 import openai
 import neo4j
@@ -16,7 +15,7 @@ from langchain.graphs.neo4j_graph import Neo4jGraph
 ################################################################################
 # Execute Graph Operations
 ################################################################################
-def execute_graph_operations(user_query: str, network_choice: str) -> Dict:
+def lambda_handler(event, context):
     """
     Summary: This function connects to the Neo4j DB, creates Cypher
     Queries using LangChain and executes it on Neo4j DB
@@ -30,6 +29,17 @@ def execute_graph_operations(user_query: str, network_choice: str) -> Dict:
     config_path = "config/config.ini"
     configur = ConfigParser()
     configur.read(config_path)
+
+    # Extract the body of request
+    try:
+        network_choice = event["network_choice"]
+        user_query = event["user_prompt"]
+        print(network_choice)
+        print(user_query)
+    except Exception as err:
+        print(err)
+        return {"statusCode": 400,
+                "body": json.dumps(err)}
 
     try:
         uri = None

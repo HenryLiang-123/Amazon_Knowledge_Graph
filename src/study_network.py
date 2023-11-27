@@ -37,9 +37,9 @@ def execute_graph_operations(config_path: str, user_query: str, network_choice: 
         password = None
         if network_choice == "EU Communication Network":
             # Get neo4j credentials
-            uri = configur.get('eu-neo4j-graph', 'uri')
-            username = configur.get('eu-neo4j-graph', 'username')
-            password = configur.get('eu-neo4j-graph', 'password')
+            uri = configur.get('eu-comm-graph', 'uri')
+            username = configur.get('eu-comm-graph', 'username')
+            password = configur.get('eu-comm-graph', 'password')
     except Exception as err:
         print("Error in getting Graph DB credentials")
         print(err)
