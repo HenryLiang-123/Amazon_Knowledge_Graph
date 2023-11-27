@@ -13,4 +13,5 @@
 neo4j/*
 client_app/*
 graph_env/*
+new_client_app/*
 
