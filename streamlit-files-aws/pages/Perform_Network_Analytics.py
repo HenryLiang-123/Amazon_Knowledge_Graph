@@ -40,12 +40,12 @@ st.title("Let's find about more about your social network.")
 st.write("Please ensure that your data is in the repository.")
 st.write("Please ensure that your data path is set correctly in the configuration.")
 
-network_choice = st.selectbox("Please select the network you would like to analyse?", ["EU Communication Network"])
+network_choice = st.selectbox("Please select the network you would like to analyse?", ["EU Communication Network", "BGP Networking Data"])
 
 try:
     user_prompt = st.text_input("What would you like to know about the network?")
     if st.button("Get your answer."):
-        # Send prompt to function
+        # Prepare data packet for request
         data = {"user_prompt": user_prompt,
                 "network_choice": network_choice}
 

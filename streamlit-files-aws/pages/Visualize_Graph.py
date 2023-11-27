@@ -5,16 +5,16 @@ import os
 import logging
 import sys
 import base64
+import requests
 from pathlib import Path
 from configparser import ConfigParser
-from PIL import Image
+import matplotlib.image as img
+import matplotlib.pyplot as plt
 
 import streamlit as st
 
 # adding src to the system path
 sys.path.insert(0, os.getcwd())
-
-from src.visualize_graph import visualize_graph
 
 ########################################
 # main
@@ -47,12 +47,32 @@ network_choice = st.selectbox("Please select the network you would like to analy
 try:
     num_records = int(st.number_input("How many records do you want to visualize?", placeholder="Please enter a non-negative number.", step=1, format="%d"))
     if st.button("Visualize the network."):
-        # Send prompt to function
-        response = visualize_graph(config_file, network_choice, num_records, Path("plots"))
+        # Prepare data packet for request
+        data = {"num_records": num_records,
+                "network_choice": network_choice}
+        
+        # Get url
+        baseurl = configur.get('client', 'web-server')
+        api = '/visualize_network'
+        url = baseurl + api
+
+        res = requests.post(url, json=data)
+
+        response = res.json()
+        print(res)
+        print(response)
 
         if response['statusCode'] == 200:
-            st.write(response["body"])
-            image = Image.open(Path("plots") / f"neo4j_graph_{network_choice}.png")
+            # st.write(response["body"])
+            st.write("You have successfully received the image.")
+            img_encoded = base64.b64encode(response["body"])
+
+            # Writing the file locally
+            outfile = open(f"plots/neo4j_graph_{network_choice}_{num_records}", "wb")
+            outfile.write(img_encoded)
+            outfile.close()
+
+            image = img.imread(f"plots/neo4j_graph_{network_choice}_{num_records}")
             st.image(image, caption=f"Visualisation of network: {network_choice}")
         else:
             st.write(response["body"])
