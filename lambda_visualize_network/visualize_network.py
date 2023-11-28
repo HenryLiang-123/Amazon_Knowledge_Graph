@@ -2,12 +2,15 @@
 # Importing relevant packages
 ################################################################################
 import sys
+import io
+import base64
 from pathlib import Path
 import json
 from configparser import ConfigParser
 import matplotlib.pyplot as plt
 import networkx as nx
 from py2neo import Graph
+from PIL import Image
 
 ################################################################################
 # Visualize graph
@@ -31,7 +34,7 @@ def lambda_handler(event, context):
         return {'statusCode': 400,
                 'body': str(err)}
     
-    output_path = "tmp/"
+    output_path = "/tmp/"
 
     # Get configuration
     config_path = "config/config.ini"
@@ -113,6 +116,7 @@ def lambda_handler(event, context):
         pos = nx.spring_layout(G)
         plt.figure(figsize=(20, 20))
         nx.draw(G, pos, with_labels=True, node_size=900, node_color="skyblue", font_size=11, width=0.8, edge_color="gray")
+        print(output_path + f"neo4j_graph_{network_choice}.png")
         plt.title("Graph Visualization from Neo4j")
         plt.savefig(output_path + f"neo4j_graph_{network_choice}.png")
         plt.close()
@@ -120,14 +124,18 @@ def lambda_handler(event, context):
         print("You have successfully visualized the network.")
     except Exception as err:
         print("You have encountered an error while creating the graph visualization.")
+        print(err)
         return {"statusCode": 400,
                 "body": str(err)}
     
     # Read image file
     try:
-        with open(output_path + f"neo4j_graph_{network_choice}.png", 'rb') as file_handle:
-            return {"statusCode": 200,
-                "body": file_handle.read()}
+        img = Image.open(output_path + f"neo4j_graph_{network_choice}.png", mode='r')
+        img_byte_arr = io.BytesIO()
+        img.save(img_byte_arr, format='PNG')
+        my_encoded_img = base64.encodebytes(img_byte_arr.getvalue()).decode('ascii')
+        return {"statusCode": 200,
+                "body": my_encoded_img}
     except Exception as err:
         print("You have encountered an error while returning the graph visualization.")
         return {"statusCode": 400,

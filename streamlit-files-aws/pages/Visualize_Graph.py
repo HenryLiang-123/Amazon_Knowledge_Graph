@@ -8,8 +8,9 @@ import base64
 import requests
 from pathlib import Path
 from configparser import ConfigParser
-import matplotlib.image as img
 import matplotlib.pyplot as plt
+import matplotlib.image as img
+from PIL import Image
 
 import streamlit as st
 
@@ -19,6 +20,8 @@ sys.path.insert(0, os.getcwd())
 ########################################
 # main
 ########################################
+
+print(os.getcwd())
 
 st.set_page_config(
     page_title="Visualize your Social Network.",
@@ -45,7 +48,7 @@ st.write("Please ensure that your data path is set correctly in the configuratio
 network_choice = st.selectbox("Please select the network you would like to analyse?", ["EU Communication Network", "BGP Networking Data"])
 
 try:
-    num_records = int(st.number_input("How many records do you want to visualize?", placeholder="Please enter a non-negative number.", step=1, format="%d"))
+    num_records = int(st.number_input("How many records do you want to visualize? Limit to 100.", step=1, format="%d"))
     if st.button("Visualize the network."):
         # Prepare data packet for request
         data = {"num_records": num_records,
@@ -59,20 +62,24 @@ try:
         res = requests.post(url, json=data)
 
         response = res.json()
-        print(res)
-        print(response)
+        # print(res)
+        # print(response)
 
         if response['statusCode'] == 200:
-            # st.write(response["body"])
+            print("Response was successful.")
             st.write("You have successfully received the image.")
-            img_encoded = base64.b64encode(response["body"])
+            img_encoded = base64.b64decode(response["body"])
 
             # Writing the file locally
-            outfile = open(f"plots/neo4j_graph_{network_choice}_{num_records}", "wb")
-            outfile.write(img_encoded)
-            outfile.close()
+            try:
+                with open(Path("plots") / f"neo4j_graph_{network_choice}_{num_records}.png", "wb") as outfile:
+                    outfile.write(img_encoded)
+            except Exception as err:
+                print("Error while trying to save image locally.")
+                print(err)
 
-            image = img.imread(f"plots/neo4j_graph_{network_choice}_{num_records}")
+            # Displaying the image
+            image = Image.open(Path("plots") / f"neo4j_graph_{network_choice}_{num_records}.png")
             st.image(image, caption=f"Visualisation of network: {network_choice}")
         else:
             st.write(response["body"])
@@ -81,5 +88,5 @@ try:
         print("You have gotten an error while trying to study network.")
         st.write("You have gotten an error while trying to study network.")
 except Exception as err:
-    print("Error in graph operation")
+    print("Error in Visualization at Client.")
     print(err)
