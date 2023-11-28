@@ -49,7 +49,6 @@ try:
     if network == "EU Communication Network":
         # Get file path
         file_path = configur.get('create_database', 'eu_path')
-
         # Get neo4j credentials
         uri = configur.get('eu-neo4j-graph', 'uri')
         username = configur.get('eu-neo4j-graph', 'username')
