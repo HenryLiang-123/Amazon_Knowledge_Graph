@@ -10,9 +10,7 @@ The objective of the project is to :
 
 4. Test final prompting technique on desired dataset.
 
-# Getting Started
-
-## Features
+# Features
 
 - **LangChain Integration:** Utilize the LangChain framework to dynamically generate Cypher queries for Neo4j.
   
@@ -24,7 +22,7 @@ The objective of the project is to :
 
 - **Network updates:** Seamlessly update your data with the click of a button.
 
-## Getting Started
+# Getting Started
 
 ### Prerequisites
 
