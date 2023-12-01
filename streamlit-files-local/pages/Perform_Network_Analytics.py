@@ -20,10 +20,10 @@ from src.study_bgp_network import execute_graph_operations
 ########################################
 
 st.set_page_config(
-    page_title="Go To Network Analytics",
+    page_title="Go To BGP Network Analytics",
     page_icon="👍",
 )
-st.sidebar.success("Let's understand the Social Network.")
+st.sidebar.success("Let's understand the BGP Network and potential changes.")
 
 # Setting config file 
 config_file = None
@@ -37,11 +37,11 @@ except Exception as err:
 
 print("Let's perform some graph operations.")
 
-st.title("Let's find about more about your social network.")
+st.title("Let's find about more about your BGP network.")
 st.write("Please ensure that your data is in the repository.")
 st.write("Please ensure that your data path is set correctly in the configuration.")
 
-network_choice = st.selectbox("Please select the network you would like to analyse?", ["EU Communication Network", "BGP Networking Data"])
+network_choice = st.selectbox("Please select the network you would like to analyse?", ["BGP Networking Data"])
 
 try:
     user_prompt = st.text_input("What would you like to know about the network?")

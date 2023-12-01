@@ -70,7 +70,7 @@ def refine_query(client,user_query):
     except Exception as e:
         print(f"Error in refining prompt: {e}")
         #output = {"status": "failed", "updated_user_prompt": raw_user_input}
-        return {'statusCode': 400,'body': json.dumps(e)}
+        return {'statusCode': 400,'body': str(e)}
 
     # Print the refined output
     updated_user_query = output["updated_user_prompt"]
@@ -284,7 +284,7 @@ def lang_chain_custom(question,client,driver,model="gpt-4"):
         print('Cypher Query is',response)
 
     except Exception as e:
-        return {'statusCode': 400, 'body': json.dumps(e)} 
+        return {'statusCode': 400, 'body': str(e)} 
     
     ## Interacting with neo4j
     try:
@@ -312,7 +312,7 @@ def lang_chain_custom(question,client,driver,model="gpt-4"):
             
         except Exception as e:
             #output = {"status": "failed", "updated_user_prompt": refined_prompt}
-            return {'statusCode': 400, 'body': json.dumps(e)}
+            return {'statusCode': 400, 'body': str(e)}
     
     try:
         ## Obtaining final answer
@@ -340,7 +340,7 @@ def lang_chain_custom(question,client,driver,model="gpt-4"):
             response_2 = get_gpt3_response_2(cypher_response, question, client, model,history)
     
     except Exception as e:
-        return {'statusCode': 400, 'body': json.dumps(e)}
+        return {'statusCode': 400, 'body': str(e)}
     
     return {'statusCode': 200, 'body': json.dumps(response_2)}
 
@@ -363,12 +363,7 @@ def execute_graph_operations(config_path: str, user_query: str, network_choice: 
         uri = None
         username = None
         password = None
-        if network_choice == "EU Communication Network":
-            # Get neo4j credentials
-            uri = configur.get('eu-comm-graph', 'uri')
-            username = configur.get('eu-comm-graph', 'username')
-            password = configur.get('eu-comm-graph', 'password')
-        elif network_choice == "BGP Networking Data":
+        if network_choice == "BGP Networking Data":
             # Get neo4j credentials
             uri = configur.get('bgp-graph', 'uri')
             username = configur.get('bgp-graph', 'username')
@@ -381,7 +376,7 @@ def execute_graph_operations(config_path: str, user_query: str, network_choice: 
         print("Error in getting Graph DB credentials")
         print(err)
         return {'statusCode': 400,
-                'body': json.dumps(err)}
+                'body': str(err)}
     
     print(uri)
     print(username)
@@ -401,7 +396,7 @@ def execute_graph_operations(config_path: str, user_query: str, network_choice: 
         print("Error in connecting to Graph DB")
         print(err)
         return {'statusCode': 400,
-                'body': json.dumps(err)}
+                'body': str(err)}
 
     # Set Up OpenAI API and get response
     try:
@@ -438,5 +433,5 @@ def execute_graph_operations(config_path: str, user_query: str, network_choice: 
         print(str(err))
         print("Error in executing Graph Operation.")
         return {'statusCode': 400,
-                'body': json.dumps(err)}
+                'body': str(err)}
         

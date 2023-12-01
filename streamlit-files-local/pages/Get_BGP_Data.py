@@ -42,18 +42,18 @@ st.title("Let's create the database.")
 st.write("Please ensure that your data is in the repository.")
 st.write("Please ensure that your data path is set correctly in the configuration.")
 
-network = st.selectbox("Please select the network you would like to analyse?", ["BGP Network"])
+network = st.selectbox("Please select the network you would like to analyse?", ["BGP Networking Data"])
 
 try:
     bgp_url = None
-    if network == "BGP Network":
+    if network == "BGP Networking Data":
         # Get BGP URL
         bgp_url = configur.get('create_database', 'bgp_url')
 
         # Get neo4j credentials
-        uri = configur.get('eu-neo4j-graph', 'uri')
-        username = configur.get('eu-neo4j-graph', 'username')
-        password = configur.get('eu-neo4j-graph', 'password')
+        uri = configur.get('bgp-graph', 'uri')
+        username = configur.get('bgp-graph', 'username')
+        password = configur.get('bgp-graph', 'password')
 except Exception as err:
     print("Error in looking at file path")
     print(err)

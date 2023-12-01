@@ -42,7 +42,7 @@ st.title("Let's visualize the network.")
 st.write("Please ensure that your data is in the repository.")
 st.write("Please ensure that your data path is set correctly in the configuration.")
 
-network_choice = st.selectbox("Please select the network you would like to analyse?", ["EU Communication Network", "BGP Networking Data"])
+network_choice = st.selectbox("Please select the network you would like to analyse?", ["BGP Networking Data"])
 
 try:
     num_records = int(st.number_input("How many records do you want to visualize?", placeholder="Please enter a non-negative number.", step=1, format="%d"))

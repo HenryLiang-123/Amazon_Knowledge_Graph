@@ -33,12 +33,7 @@ def visualize_graph(config_path: str, network_choice: str, num_records: int, \
         uri = None
         username = None
         password = None
-        if network_choice == "EU Communication Network":
-            # Get neo4j credentials
-            uri = configur.get('eu-comm-graph', 'uri')
-            username = configur.get('eu-comm-graph', 'username')
-            password = configur.get('eu-comm-graph', 'password')
-        elif network_choice == "Internet Networking":
+        if network_choice == "BGP Networking Data":
             # Get neo4j credentials
             uri = configur.get('bgp-graph', 'uri')
             username = configur.get('bgp-graph', 'username')
