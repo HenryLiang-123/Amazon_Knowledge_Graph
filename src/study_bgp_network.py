@@ -359,7 +359,6 @@ def execute_graph_operations(config_path: str, user_query: str, network_choice: 
     configur = ConfigParser()
     configur.read(config_path)
 
-
     try:
         uri = None
         username = None
