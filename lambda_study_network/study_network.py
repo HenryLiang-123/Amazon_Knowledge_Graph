@@ -39,7 +39,7 @@ def lambda_handler(event, context):
     except Exception as err:
         print(err)
         return {"statusCode": 400,
-                "body": json.dumps(err)}
+                "body": str(err)}
 
     try:
         uri = None
@@ -50,7 +50,7 @@ def lambda_handler(event, context):
             uri = configur.get('eu-comm-graph', 'uri')
             username = configur.get('eu-comm-graph', 'username')
             password = configur.get('eu-comm-graph', 'password')
-        elif network_choice == "Internet Networking":
+        elif network_choice == "BGP Networking Data":
             # Get neo4j credentials
             uri = configur.get('bgp-graph', 'uri')
             username = configur.get('bgp-graph', 'username')
@@ -63,7 +63,7 @@ def lambda_handler(event, context):
         print("Error in getting Graph DB credentials")
         print(err)
         return {'statusCode': 400,
-                'body': json.dumps(err)}
+                'body': str(err)}
     
     print(uri)
     print(username)
@@ -80,7 +80,7 @@ def lambda_handler(event, context):
         print("Error in connecting to Graph DB")
         print(err)
         return {'statusCode': 400,
-                'body': json.dumps(err)}
+                'body': str(err)}
 
     # Set Up OpenAI API and get response
     try:
@@ -100,5 +100,5 @@ def lambda_handler(event, context):
     except Exception as err:
         print("Error in executing Graph Operation with LangChain.")
         return {'statusCode': 400,
-                'body': json.dumps(err)}
+                'body': str(err)}
         
