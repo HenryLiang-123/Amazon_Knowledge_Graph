@@ -13,7 +13,7 @@ import streamlit as st
 # adding src to the system path
 sys.path.insert(0, os.getcwd())
 
-from src.study_network import execute_graph_operations
+from src.study_bgp_network import execute_graph_operations
 
 ########################################
 # main
@@ -41,7 +41,7 @@ st.title("Let's find about more about your social network.")
 st.write("Please ensure that your data is in the repository.")
 st.write("Please ensure that your data path is set correctly in the configuration.")
 
-network_choice = st.selectbox("Please select the network you would like to analyse?", ["EU Communication Network"])
+network_choice = st.selectbox("Please select the network you would like to analyse?", ["EU Communication Network", "BGP Networking Data"])
 
 try:
     user_prompt = st.text_input("What would you like to know about the network?")

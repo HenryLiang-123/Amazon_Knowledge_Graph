@@ -369,7 +369,7 @@ def execute_graph_operations(config_path: str, user_query: str, network_choice: 
             uri = configur.get('eu-comm-graph', 'uri')
             username = configur.get('eu-comm-graph', 'username')
             password = configur.get('eu-comm-graph', 'password')
-        elif network_choice == "Internet Networking":
+        elif network_choice == "BGP Networking Data":
             # Get neo4j credentials
             uri = configur.get('bgp-graph', 'uri')
             username = configur.get('bgp-graph', 'username')

@@ -40,6 +40,15 @@ def execute_graph_operations(config_path: str, user_query: str, network_choice: 
             uri = configur.get('eu-comm-graph', 'uri')
             username = configur.get('eu-comm-graph', 'username')
             password = configur.get('eu-comm-graph', 'password')
+        elif network_choice == "Internet Networking":
+            # Get neo4j credentials
+            uri = configur.get('bgp-graph', 'uri')
+            username = configur.get('bgp-graph', 'username')
+            password = configur.get('bgp-graph', 'password')
+        else:
+            # Ask user to input the dataset
+            return {'statusCode': 400,
+                'body': json.dumps("This dataset is not available. Please use our \"Get Data\" functionality.")}
     except Exception as err:
         print("Error in getting Graph DB credentials")
         print(err)
