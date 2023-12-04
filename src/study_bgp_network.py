@@ -38,7 +38,7 @@ def refine_query(client, user_query: str) -> Dict[str, Any]:
     Returns:
         A dictionary with status code and the refined query or error message.
     """
-    openai.api_key = os.getenv('OPENAI_API_KEY')
+    # openai.api_key = os.getenv('OPENAI_API_KEY')
     raw_input = user_query
     
     # setting threshold for max tokens
