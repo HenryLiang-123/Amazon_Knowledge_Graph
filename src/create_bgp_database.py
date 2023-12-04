@@ -7,15 +7,13 @@ import gzip
 import shutil
 import sys
 import json
-import threading
 from pathlib import Path
-from mrtparse import *
 from typing import Dict
 from neo4j import GraphDatabase
 from datetime import datetime
 from bs4 import BeautifulSoup
-from create_bgp_update import create_bgp_update, process_ordered_dict
-from add_attributes import fetch_all_ids, update_node, add_attributes
+from src.create_bgp_update import create_bgp_update, process_ordered_dict
+from src.add_attributes import fetch_all_ids, update_node, add_attributes
 
 ################################################################################
 # Extract the data
@@ -102,6 +100,7 @@ def create_bgp_graph(bgp_url: str, graph_uri: str, username: str, password: str,
     password: password for neo4j access
     ----------------------------------------------------------------------
     """
+    from mrtparse import Reader
     try:
         # Connect to neo4j database
         driver = GraphDatabase.driver(graph_uri, auth=(username, password))
