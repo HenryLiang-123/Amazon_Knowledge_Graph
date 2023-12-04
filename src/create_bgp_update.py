@@ -1,4 +1,4 @@
-from mtrparse import *
+from mrtparse import *
 from tqdm import tqdm
 from neo4j import GraphDatabase
 
