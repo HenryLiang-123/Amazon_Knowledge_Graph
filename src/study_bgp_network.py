@@ -8,10 +8,8 @@ import re
 from configparser import ConfigParser
 import neo4j
 from neo4j import GraphDatabase
+import openai
 from openai import OpenAI
-from langchain.chat_models import ChatOpenAI
-from langchain.chains import GraphCypherQAChain
-from langchain.graphs.neo4j_graph import Neo4jGraph
 
 ################################################################################
 # Constants
@@ -57,15 +55,18 @@ def refine_query(client, user_query: str) -> Dict[str, Any]:
               "a better format would be 'Find the number of nodes in the database'.\nRefined Input: ")
 
     try:
-        response = client.completions.create(model=MODEL_VERSION, prompt=prompt, max_tokens=max_tokens)
+        response = client.completions.create(model="text-davinci-003", prompt=prompt, max_tokens=max_tokens)
         refined_prompt = response.choices[0].text.strip()
 
         if "provide a clearer query" in refined_prompt.lower():
+            print("You have an unclear query in refine_query.")
             return {'statusCode': 400, 'body': json.dumps(refined_prompt)}
         else:
+            print("You have an error in refine_query")
             return {'statusCode': 200, 'body': json.dumps(refined_prompt)}
 
     except Exception as error:
+        print("You have an error in refine_query")
         return {'statusCode': 400, 'body': str(error)}
 
 
