@@ -54,7 +54,7 @@ api-key=#Enter OpenAI API Key
 
 ### Usage
 
-1. Run the application: `streamlit run streamlit-run-local/Welcome.py`
+1. Run the application: `streamlit run streamlit-files-local/Welcome.py`
 
 ## Acknowledgments
 
