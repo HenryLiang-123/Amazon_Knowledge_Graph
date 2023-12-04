@@ -13,16 +13,18 @@ from py2neo import Graph
 ################################################################################
 # Visualize graph
 ################################################################################
-def visualize_graph(config_path: str, network_choice: str, num_records: int, \
+def visualize_graph(config_path: str, network_choice: str, \
     output_path: Path) -> Dict[str, object]:
     """
-    Summary: This function collects the data from Neo4j DB and returns the visualization
-    ----------------------------------------------------------------------
-    Extra args:
-    config_path: Path to Config File
-    num_records: Number of records to query from Neo4J DB
-    output_path: Path to save visualization
-    ----------------------------------------------------------------------
+    Collects data from Neo4j DB and returns the visualization.
+
+    Args:
+        config_path (str): Path to Config File.
+        network_choice (str): Choice of the network data set.
+        output_path (Path): Path to save visualization.
+
+    Returns:
+        Dict[str, object]: Status code and either a success message or an error message.
     """
 
     # Get configuration
@@ -47,7 +49,6 @@ def visualize_graph(config_path: str, network_choice: str, num_records: int, \
         print(err)
         return {'statusCode': 400,
                 'body': str(err)}
-    
     try:
         # Connect to neo4j database
         graph = Graph(uri=uri, auth=(username, password))
@@ -55,12 +56,10 @@ def visualize_graph(config_path: str, network_choice: str, num_records: int, \
         print("Error in connecting to Graph DB.")
         return {"statusCode": 400,
                 "body": str(err)}
-    
     # Define
     cypher_query = f"""
     MATCH (n)-[r]->(m)
-    RETURN n, r, m 
-    LIMIT {num_records};
+    RETURN n, r, m;
     """
 
     # Get data from Neo4j
@@ -102,3 +101,4 @@ def visualize_graph(config_path: str, network_choice: str, num_records: int, \
         print("You have encountered an error while creating the graph visualization.")
         return {"statusCode": 400,
                 "body": str(err)}
+    
