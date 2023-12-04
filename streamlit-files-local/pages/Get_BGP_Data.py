@@ -5,7 +5,8 @@ import os
 import logging
 import sys
 import base64
-import threading
+from multiprocessing import Process
+import signal
 from pathlib import Path
 from configparser import ConfigParser
 
@@ -20,64 +21,57 @@ from src.create_bgp_database import create_bgp_graph
 ########################################
 # main
 ########################################
+if __name__ == "main":
+    st.set_page_config(
+        page_title="Collect Today's BGP Data",
+        page_icon=":bar_chart:",
+    )
+    st.sidebar.success("BGP Database Set-Up and Creation.")
 
-st.set_page_config(
-    page_title="Collect Today's BGP Data",
-    page_icon=":bar_chart:",
-)
-st.sidebar.success("BGP Database Set-Up and Creation.")
+    # Setting config file 
+    try:
+        config_file = 'config/config.ini'
+        configur = ConfigParser()
+        configur.read(config_file)
+    except Exception as err:
+        print("Error in reading config file")
+        print(err)
 
-# Setting config file 
-try:
-    config_file = 'config/config.ini'
-    configur = ConfigParser()
-    configur.read(config_file)
-except Exception as err:
-    print("Error in reading config file")
-    print(err)
+    print("Let's create the database.")
 
+    st.title("Let's create the database.")
+    st.write("Please ensure that your data is in the repository.")
+    st.write("Please ensure that your data path is set correctly in the configuration.")
 
-print("Let's create the database.")
+    network = st.selectbox("Please select the network you would like to analyse?", ["BGP Networking Data"])
 
-st.title("Let's create the database.")
-st.write("Please ensure that your data is in the repository.")
-st.write("Please ensure that your data path is set correctly in the configuration.")
+    try:
+        bgp_url = None
+        if network == "BGP Networking Data":
+            # Get BGP URL
+            bgp_url = configur.get('create_database', 'bgp_url')
 
-network = st.selectbox("Please select the network you would like to analyse?", ["BGP Networking Data"])
+            # Get neo4j credentials
+            uri = configur.get('bgp-graph', 'uri')
+            username = configur.get('bgp-graph', 'username')
+            password = configur.get('bgp-graph', 'password')
+    except Exception as err:
+        print("Error in looking at file path")
+        print(err)
 
-try:
-    bgp_url = None
-    if network == "BGP Networking Data":
-        # Get BGP URL
-        bgp_url = configur.get('create_database', 'bgp_url')
+    print(bgp_url)
 
-        # Get neo4j credentials
-        uri = configur.get('bgp-graph', 'uri')
-        username = configur.get('bgp-graph', 'username')
-        password = configur.get('bgp-graph', 'password')
-except Exception as err:
-    print("Error in looking at file path")
-    print(err)
+    try:
+        if st.button("Create database."):
+            db_create = create_bgp_graph(bgp_url=bgp_url, graph_uri=uri, username=username, password=password, output_path=Path("data"))
 
-print(bgp_url)
-
-try:
-    if st.button("Create database."):
-        # Create database
-        thread = threading.Thread(target=create_bgp_graph)
-        thread.start()
-        thread.join()
-        db_create = create_bgp_graph(bgp_url=bgp_url, graph_uri=uri, username=username, password=password, output_path=Path("data"))
-
-        if db_create['statusCode'] == 200:
-            st.write("You have successfully loaded your dataset.")
+            if db_create['statusCode'] == 200:
+                st.write("You have successfully loaded your dataset.")
+            else:
+                st.write(db_create["body"])
         else:
-            st.write(db_create["body"])
-        
-    else:
-        print("You have gotten an error while trying to create database.")
-        st.write("You have gotten an error while trying to create database.")
-except Exception as err:
-    print("Error in creating database")
-    print(err)
-
+            print("You have gotten an error while trying to create database.")
+            st.write("You have gotten an error while trying to create database.")
+    except Exception as err:
+        print("Error in creating database")
+        print(err)
