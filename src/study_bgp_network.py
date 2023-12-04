@@ -8,7 +8,7 @@ import re
 from configparser import ConfigParser
 import neo4j
 from neo4j import GraphDatabase
-import openai
+from openai import OpenAI
 from langchain.chat_models import ChatOpenAI
 from langchain.chains import GraphCypherQAChain
 from langchain.graphs.neo4j_graph import Neo4jGraph
