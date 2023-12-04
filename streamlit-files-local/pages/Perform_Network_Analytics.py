@@ -13,7 +13,7 @@ import streamlit as st
 # adding src to the system path
 sys.path.insert(0, os.getcwd())
 
-from src.study_bgp_network2 import execute_graph_operations
+from src.study_bgp_network import execute_graph_operations
 
 ########################################
 # main

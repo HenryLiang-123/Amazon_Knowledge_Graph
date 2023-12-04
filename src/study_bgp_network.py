@@ -1,114 +1,127 @@
 ################################################################################
 # Importing relevant packages
 ################################################################################
+import sys
 import os
-import json
-from typing import Any, Dict, List
+from pathlib import Path
+from typing import Any, Dict, List, Optional
 import re
-from configparser import ConfigParser
-import neo4j
-from neo4j import GraphDatabase
+
+import json
 import openai
+import neo4j
+from configparser import ConfigParser
+from langchain.chat_models import ChatOpenAI
+from langchain.chains import GraphCypherQAChain
+from langchain.graphs.neo4j_graph import Neo4jGraph
+from neo4j import GraphDatabase
 from openai import OpenAI
 
-################################################################################
-# Constants
-################################################################################
-MODEL_VERSION = "gpt-4"
-SCHEMA_FORMAT = """
-Node properties are the following:
-{}
-Relationship properties are the following:
-{}
-The relationships are the following:
-{}
-"""
 
 ################################################################################
-# Functions
+# Execute Graph Operations
 ################################################################################
-def refine_query(client, user_query: str) -> Dict[str, Any]:
+def refine_query(client,user_query):
+
     """
-    Refines the user query for better coherence.
+    Summary: 
+        This function is used to refine the user query so that the LLM can
+        return a coherant result.
 
     Args:
-        client: The OpenAI client instance.
-        user_query: The query provided by the user.
+        user_query :- Query given by the user
 
     Returns:
-        A dictionary with status code and the refined query or error message.
+        json file with the refined query or error message
     """
-    # openai.api_key = os.getenv('OPENAI_API_KEY')
-    raw_input = user_query
-    
-    # setting threshold for max tokens
-    max_tokens = 100
-    if len(raw_input.split()) > 100:
-        max_tokens = len(raw_input.split())
 
-    prompt = (f"The following is a plain English user input for querying a graph database: '{raw_input}'. "
-              "Rewrite this input into a clearer query format. "
-              "However, do not remove any information related to the database or information related to node type which the user provided. "
-              "If the input is not clear or relevant, indicate that the user should provide a clearer query."
-              "Remember: do not remove any information related to database and node attributes."
-              "For example, if the input is 'I want to know how many nodes are in this database', "
-              "a better format would be 'Find the number of nodes in the database'.\nRefined Input: ")
+    # Set up OpenAI API key
+    openai.api_key = os.environ['OPENAI_API_KEY']
+
+    # Get user input
+    raw_user_input = user_query
+
+    # Constructing the prompt for the LLM to refine the user input
+    prompt_to_refine = (
+        "The following is a plain English user input for querying a graph database: '{}'. "
+        "Rewrite this input into a clearer query format. If the input is not clear or relevant, indicate that the user should provide a clearer query. "
+        "For example, if the input is 'I want to know how many nodes are in this database', "
+        "a better format would be 'Find the number of nodes in the database'.\n"
+        "Refined Input: ".format(raw_user_input)
+    )
 
     try:
-        response = client.completions.create(model="text-davinci-003", prompt=prompt, max_tokens=max_tokens)
+        # Requesting OpenAI API to refine the prompt
+        response = client.completions.create(
+            model="text-davinci-003",  # Use the latest available engine
+            prompt=prompt_to_refine,
+            max_tokens=100  # Adjust based on your needs
+        )
+
         refined_prompt = response.choices[0].text.strip()
 
+        # Check if the refined prompt is valid
         if "provide a clearer query" in refined_prompt.lower():
-            print("You have an unclear query in refine_query.")
-            return {'statusCode': 400, 'body': json.dumps(refined_prompt)}
+            #output = {"status": "failed", "updated_user_prompt": refined_prompt}
+            return {'statusCode': 400, 'body': json.dumps(output["updated_user_prompt"])}
         else:
-            print("You have an error in refine_query")
-            return {'statusCode': 200, 'body': json.dumps(refined_prompt)}
+            output = {"statusCode": 200, "updated_user_prompt": refined_prompt}
 
-    except Exception as error:
-        print("You have an error in refine_query")
-        return {'statusCode': 400, 'body': str(error)}
+    except Exception as e:
+        print(f"Error in refining prompt: {e}")
+        #output = {"status": "failed", "updated_user_prompt": raw_user_input}
+        return {'statusCode': 400,'body': str(e)}
+
+    # Print the refined output
+    updated_user_query = output["updated_user_prompt"]
+    
+    print("Refined Output:\n", updated_user_query)
+
+    return output
 
 
-def neo4j_query(query: str, driver, params: Dict[str, Any] = None) -> List[Dict[str, Any]]:
+
+def neo4j_query(query: str, driver , params: dict = {}) -> List[Dict[str, Any]]:
+
     """
-    Executes a neo4j query and returns the results.
-
+    Summary:
+        Function to execute a neo4j query and return the results
     Args:
-        query: Neo4j cypher query.
-        driver: Neo4j driver instance.
-        params: Additional parameters for the neo4j query.
-
+        query :- Neo4j cypher query
+        driver :- neo4j driver
+        params :- extra params for neo4j
+    
     Returns:
-        List of dictionaries containing the query results.
+        Neo4j output 
     """
-    if params is None:
-        params = {}
+    from neo4j.exceptions import CypherSyntaxError
 
     with driver.session(database="neo4j") as session:
         try:
             data = session.run(query, params)
-            return [record.data() for record in data]
-        except neo4j.exceptions.CypherSyntaxError as error:
-            raise ValueError(f"Generated Cypher Statement is not valid\n{error}")
-
-
+            return [r.data() for r in data]
+        except CypherSyntaxError as e:
+            raise ValueError(f"Generated Cypher Statement is not valid\n{e}")
+          
 def refresh_schema(driver) -> str:
     """
-    Refreshes the Neo4j graph schema information.
+    Summary:
+        Refreshes the Neo4j graph schema information.
 
     Args:
-        driver: Neo4j driver instance.
-
+        driver :- Neo4j driver
+    
     Returns:
-        A string describing the schema of the graph.
+        A string which describes the schema of the graph
     """
+    
     node_properties_query = """
     CALL apoc.meta.data()
     YIELD label, other, elementType, type, property
     WHERE NOT type = "RELATIONSHIP" AND elementType = "node"
     WITH label AS nodeLabels, collect({property:property, type:type}) AS properties
     RETURN {labels: nodeLabels, properties: properties} AS output
+
     """
 
     rel_properties_query = """
@@ -126,131 +139,300 @@ def refresh_schema(driver) -> str:
     UNWIND other AS other_node
     RETURN {start: label, type: property, end: toString(other_node)} AS output
     """
+    
+    
+    node_properties = [el["output"] for el in neo4j_query(node_properties_query,driver)]
+    rel_properties = [el["output"] for el in neo4j_query(rel_properties_query,driver)]
+    relationships = [el["output"] for el in neo4j_query(rel_query,driver)]
 
-    node_properties = [el["output"] for el in neo4j_query(node_properties_query, driver)]
-    rel_properties = [el["output"] for el in neo4j_query(rel_properties_query, driver)]
-    relationships = [el["output"] for el in neo4j_query(rel_query, driver)]
-
-    return SCHEMA_FORMAT.format(
-        node_properties,
-        rel_properties,
-        [f"(:{el['start']})-[:{el['type']}]->(:{el['end']})" for el in relationships]
-    )
-
-
-def get_gpt3_response(curr_schema: str, question: str, client, model: str = MODEL_VERSION, history=None) -> str:
+    structured_schema = {
+        "node_props": {el["labels"]: el["properties"] for el in node_properties},
+        "rel_props": {el["type"]: el["properties"] for el in rel_properties},
+        "relationships": relationships,
+    }
+    schema_str = f"""
+    Node properties are the following:
+    {node_properties}
+    Relationship properties are the following:
+    {rel_properties}
+    The relationships are the following:
+    {[f"(:{el['start']})-[:{el['type']}]->(:{el['end']})" for el in relationships]}
     """
-    Sends a request to the OpenAI Chat API to get a response for a Cypher query.
+    
+    return schema_str
 
+def get_gpt3_response(curr_schema, question, client, model="gpt-3.5-turbo",history=None):
+    """
+    Send a request to the OpenAI Chat API and get a response from the model to
+    obtain the relevant cypher query
+    
     Args:
-        curr_schema: Current schema of the graph described as a string.
-        question: User question.
-        client: OpenAI client instance.
-        model: Model version to use.
-        history: Historical OpenAI chat responses.
-
+        curr_schema : Schema of the graph described as a string
+        question : Question entered by the user
+        client : OpenAI client
+        model : The model version to use, default is "gpt-3.5-turbo".
+        history: Historical openai chat responses
+    
     Returns:
-        The model's response as a string.
+        str: The model's response.
     """
-    system_prompt = (f"Human: Task: Generate Cypher statement to query a graph database.\n"
-                     "Instructions:\nUse only the provided relationship types and properties in the schema.\n"
-                     "Consider directionality of the graph.\n"
-                     "The cypher output should have some indication either as variable name to indicate the requirement of the question.\n"
-                     "Schema:\n{curr_schema}")
-
+   
+    
+    system_prompt =  """
+    
+    "Human: Task:Generate Cypher statement to query a graph database.\nInstructions:\nUse only the provided 
+    relationship types and properties in the schema.\nDo not use any other relationship types or 
+    properties that are not provided.\n
+    Consider directionality of the graph.\n
+    The cypher output should have some indication either as variable name to indicate the requirement of the 
+    question.\n
+    Do not include any explanations or apologies in your responses.\n
+    Do not respond to any questions that might ask anything else than for you to construct a Cypher statement.
+    \nSchema:
+    {}".
+    """.format(curr_schema)
+    
+    # Create the full prompt by combining the system prompt, context, and the user question
     messages = [
         {"role": "system", "content": system_prompt},
         {"role": "user", "content": question}
     ]
-
+    
     if history:
         messages.extend(history)
-
-    response = client.chat.completions.create(model=model, messages=messages)
-
+    
+    ## Use the OpenAI Python client to send the request
+    response = client.chat.completions.create(
+        model=model,
+        messages=messages
+    )
+    
+    # Extract the response text and return
     return response.choices[0].message.content
 
 
-def lang_chain_custom(question: str, client, driver, model: str = MODEL_VERSION) -> Dict[str, Any]:
-    """
-    Obtain an answer to the user question based on the graph.
 
+def get_gpt3_response_2(prompt, question, client,model="gpt-3.5-turbo",history=None):
+
+    """
+    Send a request to the OpenAI Chat API and get a response from the model to
+    obtain the relevant user output based on neo4j output.
+    
     Args:
-        question: User question.
-        client: OpenAI client instance.
-        driver: Neo4j driver instance.
-        model: Model version to use.
-
+        prompt : Output from neo4j
+        question : Question entered by the user
+        client : OpenAI client
+        model : The model version to use, default is "gpt-3.5-turbo".
+        history: Historical openai chat responses
+    
     Returns:
-        JSON response with the required output or error message.
+        str: The model's response.
     """
-    try:
-        curr_schema = refresh_schema(driver)
-        cypher_query = get_gpt3_response(curr_schema, question, client, model)
+    
+    system_prompt =  """
+    
+    "Human: You are an assistant that helps to form nice and human understandable answers
+    .\nThe information part contains the provided information that you must use to construct an answer.
+    \nThe provided information is authoritative, you must never doubt it or try to use your internal knowledge
+    to correct it.\nMake the answer sound as a response to the question. 
+    Do not mention that you based the result on the given information.\n
+    Output only the node ids to represent the nodes, unless specified
+    \nInformation:\n{}"
+    """.format(prompt)
+    
+    # Create the full prompt by combining the system prompt, context, and the user question
+    messages = [
+        {"role": "system", "content": system_prompt},
+        {"role": "user", "content": question}
+    ]
+    
+    if history:
+        messages.extend(history)
+    
+    ## Use the OpenAI Python client to send the request
+    response = client.chat.completions.create(
+        model=model,
+        messages=messages
+    )
+    
+    # Extract the response text and return
+    return response.choices[0].message.content
 
-        cypher_response = neo4j_query(cypher_query, driver)
-        cypher_response = cypher_response[:10]  # Limiting to avoid token limits
 
-    except Exception as error:
-        return {'statusCode': 400, 'body': str(error)}
+def lang_chain_custom(question,client,driver,model="gpt-4"):
 
-    try:
-        response = get_gpt3_response(curr_schema, cypher_response, client, model)
-
-    except Exception as error:
-        return {'statusCode': 400, 'body': str(error)}
-
-    return {'statusCode': 200, 'body': json.dumps(response)}
-
-
-def execute_graph_operations(config_path: str, user_query: str, network_choice: str) -> Dict[str, Any]:
     """
-    Connects to the Neo4j DB, creates Cypher Queries, and executes them.
-
+    Summary:
+        Obtain an answer to the user question based on the graph
+    
     Args:
-        config_path: Path to the configuration file.
-        user_query: User's query.
-        network_choice: Choice of network data.
-
+        question : Question entered by the user
+        client : OpenAI client
+        driver: Neo4j driver
+        model : The model version to use, default is "gpt-4".
+    
     Returns:
-        Dictionary with the response status and body.
+        json file with the required output or error message
     """
+    
+    try:
+        ## Obtaining the graph schema
+        curr_schema = refresh_schema(driver)  
+        
+        ## Getting Cypher query
+        response = get_gpt3_response(curr_schema, question,client, model)
+        print('Cypher Query is',response)
+
+    except Exception as e:
+        return {'statusCode': 400, 'body': str(e)} 
+    
+    ## Interacting with neo4j
+    try:
+        cypher_response = neo4j_query(response,driver)
+        cypher_response = cypher_response[:10] ## Limiting it to avoid token limits
+        print('Neo4j answer is',cypher_response)
+        
+    except Exception as e:
+        
+        try:
+            print('Retrying')
+            history = [
+                    {"role": "assistant", "content": response},
+                    {
+                        "role": "user",
+                        "content": f"""This query returns an error: {str(e)} 
+                        Give me a improved query that works without any explanations or apologies""",
+                    },
+            ]
+            response = get_gpt3_response(curr_schema, question,client,model,history)
+            print('New Cypher Query is',response)
+            cypher_response = neo4j_query(response,driver)
+            cypher_response = cypher_response[:10] ## Limiting it to avoid token limits
+            print('Neo4j answer is',cypher_response)
+            
+        except Exception as e:
+            #output = {"status": "failed", "updated_user_prompt": refined_prompt}
+            return {'statusCode': 400, 'body': str(e)}
+    
+    try:
+        ## Obtaining final answer
+        response_2 = get_gpt3_response_2(cypher_response, question,  client, model)
+        
+        pattern = r'\bsorry\b'
+        # re.IGNORECASE flag makes the search case-insensitive
+        if(bool(re.search(pattern, response_2, re.IGNORECASE))):
+            
+            print('Retrying output string')
+            
+            history = [
+            {"role": "assistant", "content": response_2},
+            {
+                "role": "user",
+                "content": f"""This query returns an incomplete answer.
+                If the information is empty then return does not exist or unknown.\n  
+                If not, assume the output is a simplified answer to 
+                the question {question} 
+                Give me a improved query that works without any explanations or apologies""",
+            },
+
+            ]
+        
+            response_2 = get_gpt3_response_2(cypher_response, question, client, model,history)
+    
+    except Exception as e:
+        return {'statusCode': 400, 'body': str(e)}
+    
+    return {'statusCode': 200, 'body': json.dumps(response_2)}
+
+
+def execute_graph_operations(config_path: str, user_query: str, network_choice: str) -> Dict:
+    """
+    Summary: This function connects to the Neo4j DB, creates Cypher
+    Queries and executes it on Neo4j DB
+    ----------------------------------------------------------------------
+    Extra args:
+    file_path: Is a Path object which points to the file with data
+    ----------------------------------------------------------------------
+    """
+
+    # Get configuration
     configur = ConfigParser()
     configur.read(config_path)
 
     try:
-        uri, username, password = None, None, None
+        uri = None
+        username = None
+        password = None
         if network_choice == "BGP Networking Data":
+            # Get neo4j credentials
             uri = configur.get('bgp-graph', 'uri')
             username = configur.get('bgp-graph', 'username')
             password = configur.get('bgp-graph', 'password')
         else:
-            return {'statusCode': 400, 'body': json.dumps("Dataset not available. Please use 'Get Data' functionality.")}
+            # Ask user to input the dataset
+            return {'statusCode': 400,
+                'body': json.dumps("This dataset is not available. Please use our \"Get Data\" functionality.")}
+    except Exception as err:
+        print("Error in getting Graph DB credentials")
+        print(err)
+        return {'statusCode': 400,
+                'body': str(err)}
+    
+    print(uri)
+    print(username)
+    print(password)
 
-    except Exception as error:
-        return {'statusCode': 400, 'body': str(error)}
-
+    # Connecting to Graph DB
     try:
+        # graph = Neo4jGraph(
+        #         url=uri,
+        #         username=username,
+        #         password=password
+        #     )
+
         driver = GraphDatabase.driver(uri, auth=(username, password))
 
-    except Exception as error:
-        return {'statusCode': 400, 'body': str(error)}
+    except Exception as err:
+        print("Error in connecting to Graph DB")
+        print(err)
+        return {'statusCode': 400,
+                'body': str(err)}
 
+    # Set Up OpenAI API and get response
     try:
         api_key = configur.get('openai-api', 'api-key')
-        os.environ['OPENAI_API_KEY'] = api_key
+        name = 'OPENAI_API_KEY'
+        os.environ[name] = api_key
         client = OpenAI()
-
-        refined_output = refine_query(client=client, user_query=user_query)
-
-        if refined_output['statusCode'] == 400:
+        
+        ## Updating the user query        
+        refined_output = refine_query(client=client,user_query=user_query)
+        
+        if(refined_output['statusCode']==400):
             return refined_output
+        else:
+            updated_user_query = refined_output["updated_user_prompt"]
 
-        updated_user_query = json.loads(refined_output['body'])
+        ################### Custom Langchain ######################
 
-        response = lang_chain_custom(question=updated_user_query, client=client, driver=driver, model=MODEL_VERSION)
+        
+
+        # Setting up ChatGPT integration with Graph Database
+        # chain = GraphCypherQAChain.from_llm(
+        #     ChatOpenAI(temperature=0), graph=graph, verbose=True,
+        # )
+
+        response = lang_chain_custom(question=updated_user_query,
+                                     client=client,
+                                     driver=driver,
+                                     model="gpt-4")
 
         return response
+    
+    except Exception as err:
+        print(str(err))
+        print("Error in executing Graph Operation.")
+        return {'statusCode': 400,
+                'body': str(err)}
+        
 
-    except Exception as error:
-        return {'statusCode': 400, 'body': str(error)}
