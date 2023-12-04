@@ -13,7 +13,7 @@ from py2neo import Graph
 ################################################################################
 # Visualize graph
 ################################################################################
-def visualize_graph(config_path: str, network_choice: str, num_records: int, \
+def visualize_graph(config_path: str, network_choice: str, \
     output_path: Path) -> Dict[str, object]:
     """
     Summary: This function collects the data from Neo4j DB and returns the visualization
@@ -59,8 +59,7 @@ def visualize_graph(config_path: str, network_choice: str, num_records: int, \
     # Define
     cypher_query = f"""
     MATCH (n)-[r]->(m)
-    RETURN n, r, m 
-    LIMIT {num_records};
+    RETURN n, r, m;
     """
 
     # Get data from Neo4j
