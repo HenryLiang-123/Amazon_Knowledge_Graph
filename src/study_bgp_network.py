@@ -17,7 +17,6 @@ from langchain.graphs.neo4j_graph import Neo4jGraph
 # Constants
 ################################################################################
 MODEL_VERSION = "gpt-4"
-MAX_TOKENS = 100
 SCHEMA_FORMAT = """
 Node properties are the following:
 {}
@@ -43,14 +42,22 @@ def refine_query(client, user_query: str) -> Dict[str, Any]:
     """
     openai.api_key = os.getenv('OPENAI_API_KEY')
     raw_input = user_query
+    
+    # setting threshold for max tokens
+    max_tokens = 100
+    if len(raw_input.split()) > 100:
+        max_tokens = len(raw_input.split())
+
     prompt = (f"The following is a plain English user input for querying a graph database: '{raw_input}'. "
               "Rewrite this input into a clearer query format. "
-              "If the input is not clear or relevant, indicate that the user should provide a clearer query. "
+              "However, do not remove any information related to the database or information related to node type which the user provided. "
+              "If the input is not clear or relevant, indicate that the user should provide a clearer query."
+              "Remember: do not remove any information related to database and node attributes."
               "For example, if the input is 'I want to know how many nodes are in this database', "
               "a better format would be 'Find the number of nodes in the database'.\nRefined Input: ")
 
     try:
-        response = client.completions.create(model=MODEL_VERSION, prompt=prompt, max_tokens=MAX_TOKENS)
+        response = client.completions.create(model=MODEL_VERSION, prompt=prompt, max_tokens=max_tokens)
         refined_prompt = response.choices[0].text.strip()
 
         if "provide a clearer query" in refined_prompt.lower():
