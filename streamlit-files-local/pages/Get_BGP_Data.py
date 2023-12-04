@@ -5,6 +5,7 @@ import os
 import logging
 import sys
 import base64
+import threading
 from pathlib import Path
 from configparser import ConfigParser
 
@@ -63,6 +64,9 @@ print(bgp_url)
 try:
     if st.button("Create database."):
         # Create database
+        thread = threading.Thread(target=create_bgp_graph)
+        thread.start()
+        thread.join()
         db_create = create_bgp_graph(bgp_url=bgp_url, graph_uri=uri, username=username, password=password, output_path=Path("data"))
 
         if db_create['statusCode'] == 200:
