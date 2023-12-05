@@ -45,10 +45,10 @@ st.write("Please ensure that your data path is set correctly in the configuratio
 network_choice = st.selectbox("Please select the network you would like to analyse?", ["BGP Networking Data"])
 
 try:
-    # num_records = int(st.number_input("How many records do you want to visualize?", placeholder="Please enter a non-negative number.", step=1, format="%d"))
+    num_records = int(st.number_input("How many records do you want to visualize?", placeholder="Please enter a non-negative number.", step=1, format="%d"))
     if st.button("Visualize the network."):
         # Send prompt to function
-        response = visualize_graph(config_file, network_choice, Path("plots"))
+        response = visualize_graph(config_file, network_choice, num_records, Path("plots"))
 
         if response['statusCode'] == 200:
             st.write(response["body"])
