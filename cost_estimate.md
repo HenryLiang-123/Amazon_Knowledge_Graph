@@ -57,3 +57,11 @@ According to [OpenAI](https://openai.com/pricing#language-models) and the usage 
 3. **Total: $30.66 per new snapshot**
 
 ## AWS ECS
+
+### Assumptions
+
+1. Ten tasks are run per day.
+2. The average length of the session is 1 hour. This factors in idle times, OpenAI API call times, question formulation times, and feedback loop.
+3. Each task uses 2 vCPU and 6GB memory.
+4. The application takes 20GB of ephemeral storage.
+5. 
