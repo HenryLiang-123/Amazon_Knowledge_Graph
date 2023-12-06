@@ -34,7 +34,7 @@ The objective of the project is to :
 
 ```
 [create_database]
-file_path=#Enter the file path to the data to be loaded
+bgp_url=https://data.ris.ripe.net
 
 [bgp-graph]
 uri=#URI to Neo4j Graph DB
