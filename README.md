@@ -60,6 +60,8 @@ api-key=#Enter OpenAI API Key
 
 **Please ensure that plots directory and config directory with config.ini files is completed as described in Steps 3 and 4 in [Prereqisites](#prerequisites) section**.
 
+Run the following steps in Terminal from the parent directory of the project.
+
 1. Open docker
 
 ``` open -a Docker ```
