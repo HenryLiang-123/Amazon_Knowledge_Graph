@@ -64,4 +64,9 @@ According to [OpenAI](https://openai.com/pricing#language-models) and the usage 
 2. The average length of the session is 1 hour. This factors in idle times, OpenAI API call times, question formulation times, and feedback loop.
 3. Each task uses 2 vCPU and 6GB memory.
 4. The application takes 20GB of ephemeral storage.
-5. 
+
+### Cost for Service
+
+Using [AWS cost calculator](https://calculator.aws/#/estimate?id=fcccff52ad2bea3f637906e5dd6d1575ac952574), the cost is determined to be:
+
+**$32.74 per month** 
