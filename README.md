@@ -70,6 +70,8 @@ api-key=#Enter OpenAI API Key
 
 ``` docker run -p 8501:8501 <image_name> ```
 
+4. Check the website on browser at `http://localhost:8501/`.
+
 ## Acknowledgments
 
 - This repo is the combined work of Hanwei Hu, Sharika Mahadevan, Yuexin Chen, Kiran Sheena Jyothi and Han Wen Liang.
