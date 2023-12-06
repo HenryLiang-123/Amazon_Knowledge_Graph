@@ -41,11 +41,12 @@ Monthly cost: **$2073.60**
 6. The average length of a user's question is 20 tokens
 7. The final output of the LLM has a length of 15 tokens
 8. We run the system between the most recent snapshot with all previous snapshots
+9. The average length of a refined prompt is 20 tokens
 
 ### Relevant Calculations
 
-1. Total input tokens: 91 &times; 100 + 23 + 340 + 20 = 9483 tokens
-2. Total output tokens: 23 + 23 + 340 + 20 + 15 = 421 tokens
+1. Total input tokens: 91 &times; 100 + 340 + 20 + 20 + 340 + 50 + 20 + 340 =  10230 tokens
+2. Total output tokens: 20 + 23 + 15 = 58 tokens
 3. Number of times run: 99 times.
 
 ### Cost for Service
