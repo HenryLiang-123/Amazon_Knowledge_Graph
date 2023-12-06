@@ -56,6 +56,20 @@ api-key=#Enter OpenAI API Key
 
 1. Run the application: `streamlit run streamlit-files-local/Welcome.py`
 
+### Containerizing
+
+1. Open docker
+
+``` open -a Docker ```
+
+2. Build the Docker image
+
+``` docker build -t <image_name> . ```
+
+3. Run the Container.
+
+``` docker run -p 8501:8501 <image_name> ```
+
 ## Acknowledgments
 
 - This repo is the combined work of Hanwei Hu, Sharika Mahadevan, Yuexin Chen, Kiran Sheena Jyothi and Han Wen Liang.
