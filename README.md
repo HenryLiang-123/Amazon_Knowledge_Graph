@@ -58,7 +58,7 @@ api-key=#Enter OpenAI API Key
 
 ### Containerizing
 
-**Please ensure that that plots directory and config directory with config.ini files is completed as described in Steps 3 and 4 in [Prereqisites](#prerequisites) section**.
+**Please ensure that plots directory and config directory with config.ini files is completed as described in Steps 3 and 4 in [Prereqisites](#prerequisites) section**.
 
 1. Open docker
 
