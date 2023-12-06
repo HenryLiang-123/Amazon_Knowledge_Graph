@@ -53,9 +53,9 @@ Monthly cost: **$2073.60**
 
 According to [OpenAI](https://openai.com/pricing#language-models) and the usage of GPT-4, the total costs will be:
 
-1. Input: 99 &times; 9483 &divide; 1000 &times; 0.03 = $28.16 per new snapshot
-2. Output: 99 &times; 421 &divide; 1000 &times; 0.06 = $2.5 per new snapshot
-3. **Total: $30.66 per new snapshot**
+1. Input: 99 &times; 10230 &divide; 1000 &times; 0.03 = $30.38 per new snapshot
+2. Output: 99 &times; 58 &divide; 1000 &times; 0.06 = $0.34 per new snapshot
+3. **Total: $30.72 per new snapshot**
 
 ## AWS ECS
 
