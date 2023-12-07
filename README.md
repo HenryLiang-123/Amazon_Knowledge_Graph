@@ -76,6 +76,6 @@ Run the following steps in Terminal from the parent directory of the project.
 
 4. Check the website on browser at `http://localhost:8501/`.
 
-## Acknowledgments
+# Acknowledgments
 
 - This repo is the combined work of Hanwei Hu, Sharika Mahadevan, Yuexin Chen, Kiran Sheena Jyothi and Han Wen Liang.
