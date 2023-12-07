@@ -35,27 +35,29 @@ Monthly cost: **$2073.60**
 
 1. There are 91 tokens for 1 graph schema as output from Neo4j
 2. To detect routing anomalies and hijacking incidents between timestamps, we store 100 snapshots of the BPG graph at all times in the database
-3. On average, the length of a Cypher query output from GPT-4 is 23 tokens
+3. We run the system between the most recent snapshot with only another snapshot
 4. The feedback loop for incorrect Cypher queries runs once and only once
 5. The total length of all custom prompts is 340 tokens
 6. The average length of a user's question is 20 tokens
-7. The final output of the LLM has a length of 15 tokens
-8. We run the system between the most recent snapshot with all previous snapshots
-9. The average length of a refined prompt is 20 tokens
+7. The average length of a refined prompt is 20 tokens
+8. On average, the length of a Cypher query output from GPT-4 is 23 tokens
+9. The length of the Neo4j output can vary from 15 to 2500 tokens. We take an average of 1000
+10. The final output of the LLM has a length of 15 tokens
+
 
 ### Relevant Calculations
 
-1. Total input tokens: 91 &times; 100 + 340 + 20 + 20 + 340 + 50 + 20 + 340 =  10230 tokens
+1. Total input tokens: 340 + 20 + 20 + 91 &times; 100 + 20 + 1000  =  10500 tokens
 2. Total output tokens: 20 + 23 + 15 = 58 tokens
-3. Number of times run: 99 times.
+3. Number of queries run per day: 50.
 
 ### Cost for Service
 
 According to [OpenAI](https://openai.com/pricing#language-models) and the usage of GPT-4, the total costs will be:
 
-1. Input: 99 &times; 10230 &divide; 1000 &times; 0.03 = $30.38 per new snapshot
-2. Output: 99 &times; 58 &divide; 1000 &times; 0.06 = $0.34 per new snapshot
-3. **Total: $30.72 per new snapshot**
+1. Input: 50 &times; 10500 &divide; 1000 &times; 0.03 = $15.75 per day
+2. Output: 50 &times; 58 &divide; 1000 &times; 0.06 = $0.174 per day
+3. **Total: $15.924 per day ~ $477 per month**
 
 ## AWS ECS
 
